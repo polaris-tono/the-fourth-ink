@@ -47,6 +47,7 @@
     </form>
 
     <section class="mt-4" aria-label="Articles">
+
         @forelse ($articles as $item)
             <article class="border-b border-rule py-4">
                 <div class="flex flex-wrap items-center gap-2">
