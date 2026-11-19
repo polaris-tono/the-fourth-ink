@@ -28,10 +28,10 @@ class ArticleController extends Controller
         $data = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', Rule::enum(ArticleStatus::class)],
-            'type' => ['nullable', Rule::enum(ArticleType::class)],
-            'trash' => ['nullable', 'boolean'],
+             'trash' => ['nullable', 'boolean'],
         ]);
-
+     'type' => ['nullable', Rule::enum(ArticleType::class)],
+      
         $trash = $request->boolean('trash');
         $adminId = $request->user()->id;
 

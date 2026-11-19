@@ -41,9 +41,22 @@
         @if ($external->isNotEmpty())
             <section class="mt-10">
                 <h2 class="border-b-2 border-ink pb-1 font-serif text-2xl font-bold">Headlines from around the web</h2>
-                @foreach ($external as $item)
-                    <x-external-card :item="$item" />
-                @endforeach
+                <div class="grid gap-x-8 md:grid-cols-2">
+                    @foreach ($external as $item)
+                        <article class="border-b border-rule py-4">
+                            @if ($item->image_url)
+                                <img
+                                    src="{{ $item->image_url }}"
+                                    alt="{{ $item->title }}"
+                                    loading="lazy"
+                                    onerror="this.style.display='none'"
+                                    class="mb-3 h-44 w-full rounded object-cover"
+                                >
+                            @endif
+                            <x-external-card :item="$item" />
+                        </article>
+                    @endforeach
+                </div>
             </section>
         @endif
     @endif
