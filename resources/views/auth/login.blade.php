@@ -11,20 +11,15 @@
 
             <div>
                 <label for="email" class="block text-sm font-semibold">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required
-                       autocomplete="email"
-                       class="mt-1 w-full border border-ink/40 bg-white px-3 py-2"
-                       @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
-                @error('email')
-                    <p id="email-error" class="mt-1 text-sm text-accent">{{ $message }}</p>
-                @enderror
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email"
+                    autofocus class="mt-1 w-full border border-ink/40 bg-white px-3 py-2" @error('email')
+                    aria-invalid="true" aria-describedby="email-error" @enderror>
             </div>
 
             <div>
                 <label for="password" class="block text-sm font-semibold">Password</label>
-                <input id="password" name="password" type="password" required
-                       autocomplete="current-password"
-                       class="mt-1 w-full border border-ink/40 bg-white px-3 py-2">
+                <input id="password" name="password" type="password" required autocomplete="current-password"
+                    class="mt-1 w-full border border-ink/40 bg-white px-3 py-2">
             </div>
 
             <label class="flex items-center gap-2 text-sm">
