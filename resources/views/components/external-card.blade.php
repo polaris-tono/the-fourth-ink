@@ -3,14 +3,16 @@
 <article class="border-t border-rule py-4">
     @if ($item->image_url && str_starts_with($item->image_url, 'http'))
         {{-- Decorative copy of the headline link, so keyboard and screen-reader users skip it. --}}
-        <a href="{{ route('external.show', $item) }}" tabindex="-1" aria-hidden="true" class="mb-3 block">
+        <a href="{{ route('external.show', $item) }}" tabindex="-1" aria-hidden="true"
+           class="mb-3 block overflow-hidden rounded bg-rule/30">
             <img
                 src="{{ $item->image_url }}"
                 alt=""
                 loading="lazy"
                 referrerpolicy="no-referrer"
+                onload="if (this.naturalWidth < 120 || this.naturalHeight < 60) this.parentElement.style.display='none'"
                 onerror="this.parentElement.style.display='none'"
-                class="h-44 w-full rounded object-cover"
+                class="h-44 w-full object-cover"
             >
         </a>
     @endif
