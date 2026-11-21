@@ -12,7 +12,7 @@ use App\Models\User;
 use App\Services\CoverImageService;
 use App\Services\EditorialWorkflowService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request;c
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -40,14 +40,14 @@ class ArticleController extends Controller
 
         $articles = Article::query()
             ->with(['author', 'category'])
-            ->when($trash, fn ($q) => $q->onlyTrashed())
+            ->when($trash, fn($q) => $q->onlyTrashed())
             // Other writers' unsubmitted drafts stay private, even from admins.
             ->where(function ($q) use ($adminId) {
                 $q->where('status', '!=', ArticleStatus::Draft->value)
                     ->orWhere('user_id', $adminId);
             })
-            ->when($data['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
-            ->when($data['type'] ?? null, fn ($q, $t) => $q->where('type', $t))
+            ->when($data['status'] ?? null, fn($q, $s) => $q->where('status', $s))
+            ->when($data['type'] ?? null, fn($q, $t) => $q->where('type', $t))
             ->when(filled($data['q'] ?? null), function ($q) use ($data) {
                 $q->where('title', 'like', '%' . addcslashes($data['q'], '%_\\') . '%');
             })
@@ -146,7 +146,7 @@ class ArticleController extends Controller
         abort_unless($article->status === ArticleStatus::Published, 422);
 
         // is_featured is not mass-assignable, so it is set explicitly here.
-        $article->forceFill(['is_featured' => ! $article->is_featured])->save();
+        $article->forceFill(['is_featured' => !$article->is_featured])->save();
 
         return back()->with('status', $article->is_featured ? 'Article is now featured.' : 'Article removed from featured.');
     }
