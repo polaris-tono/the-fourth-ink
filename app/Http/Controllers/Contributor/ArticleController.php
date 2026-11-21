@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contributor\ArticleRequest;
 use App\Models\Article;
 use App\Models\Category;
+use App\Services\CoverImageService;
 use App\Services\EditorialWorkflowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,8 +18,10 @@ class ArticleController extends Controller
 {
     private const FIELDS = ['category_id', 'type', 'title', 'excerpt', 'body'];
 
-    public function __construct(private EditorialWorkflowService $workflow)
-    {
+    public function __construct(
+        private EditorialWorkflowService $workflow,
+        private CoverImageService $covers,
+    ) {
     }
 
     public function index(Request $request): View
@@ -45,6 +48,7 @@ class ArticleController extends Controller
 
         // Created through the relationship, so user_id is always the logged-in user.
         $article = $request->user()->articles()->create($request->safe()->only(self::FIELDS));
+        $this->covers->apply($request, $article);
 
         return $this->finish($request, $article, 'Draft saved.');
     }
@@ -70,6 +74,7 @@ class ArticleController extends Controller
         $this->authorize('update', $article);
 
         $article->update($request->safe()->only(self::FIELDS));
+        $this->covers->apply($request, $article);
 
         return $this->finish($request, $article, 'Changes saved.');
     }

@@ -2,9 +2,21 @@
 
 @php
     $isBlock = $article->type !== \App\Enums\ArticleType::News;
+    $cover = $article->coverUrl();
+    $decorative = blank($article->cover_alt);
 @endphp
 
 <article class="border-t border-rule py-4">
+    @if ($cover)
+        <a href="{{ route('articles.show', $article->slug) }}"
+           @if ($decorative) tabindex="-1" aria-hidden="true" @endif
+           class="mb-3 block overflow-hidden rounded bg-rule/30">
+            <img src="{{ $cover }}" alt="{{ $article->cover_alt }}" loading="lazy"
+                 onerror="this.parentElement.style.display='none'"
+                 class="w-full object-cover {{ $lead ? 'h-72' : 'h-44' }}">
+        </a>
+    @endif
+
     <p class="text-xs font-semibold uppercase tracking-widest {{ $isBlock ? 'font-mono text-block' : 'text-accent' }}">
         {{ $article->category->name }} · {{ $article->type->label() }}
     </p>
