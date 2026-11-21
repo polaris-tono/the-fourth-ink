@@ -30,6 +30,14 @@
             </p>
         </header>
 
+        @if ($article->coverUrl())
+            <figure class="mt-6">
+                <img src="{{ $article->coverUrl() }}" alt="{{ $article->cover_alt }}"
+                     onerror="this.parentElement.style.display='none'"
+                     class="max-h-[28rem] w-full rounded object-cover">
+            </figure>
+        @endif
+
         {{-- bodyHtml() strips raw HTML and unsafe links, so this output is safe --}}
         <div class="article-body mt-6">{!! $article->bodyHtml() !!}</div>
     </article>

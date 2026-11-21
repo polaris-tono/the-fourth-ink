@@ -17,6 +17,15 @@ class NewsApiService
 {
     private const LAST_RUN_KEY = 'news:last-refresh';
 
+    /**
+     * Feeds that must contain local stories only. The news service tags wire stories
+     * (press releases, regional agencies) with several countries, so a story is kept
+     * in these feeds only when its single listed country is one of the accepted values.
+     */
+    private const LOCAL_ONLY_FEEDS = [
+        'national' => ['bd', 'bangladesh'],
+    ];
+
     public function isConfigured(): bool
     {
         return filled(config('news.key'));
@@ -59,11 +68,13 @@ class NewsApiService
 
             try {
                 $items = $this->fetch($params);
+                $stats = $this->store($category, $items);
 
                 $results[$slug] = [
                     'status' => 'ok',
                     'fetched' => count($items),
-                    'saved' => $this->store($category, $items),
+                    'saved' => $stats['saved'],
+                    'message' => $stats['skipped'] > 0 ? "{$stats['skipped']} skipped (duplicate or not local)" : '',
                 ];
             } catch (NewsApiException $e) {
                 $results[$slug] = ['status' => 'error', 'message' => $e->getMessage()];
@@ -164,38 +175,63 @@ class NewsApiService
         return is_array($results) ? $results : [];
     }
 
-    /** Save the items. A link already stored is updated, never duplicated. */
-    private function store(Category $category, array $items): int
+    /**
+     * Save the items. A story is never stored twice: not under the same address,
+     * and not under the same headline at a different address (syndicated copies).
+     *
+     * @return array{saved:int, skipped:int}
+     */
+    private function store(Category $category, array $items): array
     {
         $saved = 0;
+        $skipped = 0;
 
         foreach ($items as $item) {
             if (! is_array($item)) {
                 continue;
             }
 
-            $title = trim(strip_tags((string) ($item['title'] ?? '')));
+            $title = mb_substr(trim(strip_tags((string) ($item['title'] ?? ''))), 0, 500);
             $link = trim((string) ($item['link'] ?? ''));
 
             // Data from an outside service is untrusted: skip anything without a title or a real web link.
             if ($title === '' || ! preg_match('#^https?://#i', $link)) {
+                $skipped++;
                 continue;
             }
 
-            $description = trim(strip_tags((string) ($item['description'] ?? '')));
-            $image = trim((string) ($item['image_url'] ?? ''));
-            $source = trim((string) ($item['source_name'] ?? $item['source_id'] ?? ''));
+            // Keep the National feed for Bangladesh-only sources.
+            if (! $this->isLocalEnough($category->slug, $item)) {
+                $skipped++;
+                continue;
+            }
 
-            $row = ExternalArticle::firstOrNew(['url_hash' => hash('sha256', $link)]);
+            $hash = hash('sha256', $link);
+
+            $row = ExternalArticle::where('url_hash', $hash)->first()
+                ?? ExternalArticle::where('title', $title)->first();
+
+            // The same headline is already stored under another address: just keep that copy fresh.
+            if ($row && $row->url_hash !== $hash) {
+                $row->forceFill(['fetched_at' => now()])->save();
+                $skipped++;
+                continue;
+            }
+
+            $row ??= new ExternalArticle(['url_hash' => $hash]);
 
             // A story keeps the category it was first saved under.
             if (! $row->exists) {
                 $row->category_id = $category->id;
             }
 
+            $description = trim(strip_tags((string) ($item['description'] ?? '')));
+            $image = trim((string) ($item['image_url'] ?? ''));
+            $source = trim((string) ($item['source_name'] ?? $item['source_id'] ?? ''));
+
             $row->fill([
                 'source_name' => $source !== '' ? mb_substr($source, 0, 150) : null,
-                'title' => mb_substr($title, 0, 500),
+                'title' => $title,
                 'description' => $description !== '' ? Str::limit($description, 600) : null,
                 'url' => $link,
                 'image_url' => preg_match('#^https?://#i', $image) ? $image : null,
@@ -207,7 +243,25 @@ class NewsApiService
             $saved++;
         }
 
-        return $saved;
+        return ['saved' => $saved, 'skipped' => $skipped];
+    }
+
+    /** True unless this feed is local-only and the story is not tagged with just that one country. */
+    private function isLocalEnough(string $slug, array $item): bool
+    {
+        $accepted = self::LOCAL_ONLY_FEEDS[$slug] ?? null;
+
+        if ($accepted === null) {
+            return true;
+        }
+
+        $countries = $item['country'] ?? null;
+
+        if (! is_array($countries) || count($countries) !== 1) {
+            return false;
+        }
+
+        return in_array(strtolower(trim((string) reset($countries))), $accepted, true);
     }
 
     /** The service sends UTC times; convert them to the app's timezone. */

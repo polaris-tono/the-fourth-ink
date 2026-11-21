@@ -46,6 +46,12 @@
             @endif
         </div>
 
+        @if ($article->coverUrl())
+            <figure class="mt-6">
+                <img src="{{ $article->coverUrl() }}" alt="{{ $article->cover_alt }}" class="max-h-96 w-full rounded object-cover">
+            </figure>
+        @endif
+
         {{-- bodyHtml() strips raw HTML and unsafe links --}}
         <div class="article-body mt-6">{!! $article->bodyHtml() !!}</div>
 

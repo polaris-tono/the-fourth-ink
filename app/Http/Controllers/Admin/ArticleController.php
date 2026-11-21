@@ -9,9 +9,10 @@ use App\Http\Requests\Admin\ArticleRequest;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\User;
+use App\Services\CoverImageService;
 use App\Services\EditorialWorkflowService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request;c
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -19,8 +20,10 @@ class ArticleController extends Controller
 {
     private const FIELDS = ['category_id', 'type', 'title', 'excerpt', 'body'];
 
-    public function __construct(private EditorialWorkflowService $workflow)
-    {
+    public function __construct(
+        private EditorialWorkflowService $workflow,
+        private CoverImageService $covers,
+    ) {
     }
 
     public function index(Request $request): View
@@ -31,7 +34,6 @@ class ArticleController extends Controller
             'type' => ['nullable', Rule::enum(ArticleType::class)],
             'trash' => ['nullable', 'boolean'],
         ]);
-        //'type' => ['nullable', Rule::enum(ArticleType::class)],
 
         $trash = $request->boolean('trash');
         $adminId = $request->user()->id;
@@ -79,6 +81,7 @@ class ArticleController extends Controller
 
         // Created through the relationship, so the author is always the logged-in admin.
         $article = $request->user()->articles()->create($request->safe()->only(self::FIELDS));
+        $this->covers->apply($request, $article);
 
         if ($request->input('action') === 'publish_now') {
             $this->workflow->publishByAdmin($article, $request->user());
@@ -101,6 +104,7 @@ class ArticleController extends Controller
         $this->guard($article, $request->user());
 
         $article->update($request->safe()->only(self::FIELDS));
+        $this->covers->apply($request, $article);
 
         if ($request->input('action') === 'publish_now') {
             // Only an admin's own draft can be fast-tracked.

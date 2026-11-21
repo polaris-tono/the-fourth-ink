@@ -15,8 +15,8 @@ class Article extends Model
 {
     use SoftDeletes;
 
-    // status, published_at, is_featured, views are NOT fillable:
-    // they can only change through the editorial workflow / admin actions.
+    // status, published_at, is_featured, views and the cover image are NOT fillable:
+    // they can only change through the editorial workflow / admin actions / the cover service.
     protected $fillable = ['category_id', 'type', 'title', 'excerpt', 'body'];
 
     protected function casts(): array
@@ -70,12 +70,19 @@ class Article extends Model
     {
         return $query->where('is_featured', true);
     }
-        /** Markdown → safe HTML. Raw HTML is stripped, unsafe links blocked (XSS protection). */
+
+    /** Markdown → safe HTML. Raw HTML is stripped, unsafe links blocked (XSS protection). */
     public function bodyHtml(): string
     {
         return Str::markdown($this->body, [
             'html_input' => 'strip',
             'allow_unsafe_links' => false,
         ]);
+    }
+
+    /** Public address of the cover image, or null when the article has none. */
+    public function coverUrl(): ?string
+    {
+        return $this->cover_image ? asset('uploads/' . ltrim($this->cover_image, '/')) : null;
     }
 }

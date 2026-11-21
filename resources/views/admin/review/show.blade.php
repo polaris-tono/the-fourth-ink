@@ -88,6 +88,12 @@
             @endforelse
         </section>
 
+        @if ($article->coverUrl())
+            <figure class="mt-6">
+                <img src="{{ $article->coverUrl() }}" alt="{{ $article->cover_alt }}" class="max-h-96 w-full rounded object-cover">
+            </figure>
+        @endif
+
         {{-- Full text --}}
         <div class="article-body mt-8">{!! $article->bodyHtml() !!}</div>
 

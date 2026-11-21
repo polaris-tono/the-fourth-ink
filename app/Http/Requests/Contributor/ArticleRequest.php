@@ -25,6 +25,9 @@ class ArticleRequest extends FormRequest
             'title' => ['required', 'string', 'max:200'],
             'excerpt' => ['nullable', 'string', 'max:300'],
             'body' => ['required', 'string', $submitting ? 'min:100' : 'min:1', 'max:50000'],
+            'cover' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:max_width=6000,max_height=6000'],
+            'cover_alt' => ['nullable', 'string', 'max:200'],
+            'remove_cover' => ['nullable', 'boolean'],
             'action' => ['required', Rule::in(['save_draft', 'submit'])],
         ];
     }

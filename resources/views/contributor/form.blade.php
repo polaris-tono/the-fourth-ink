@@ -15,7 +15,7 @@
             </div>
         @endif
 
-        <form method="POST"
+        <form method="POST" enctype="multipart/form-data"
               action="{{ $article->exists ? route('contributor.articles.update', $article) : route('contributor.articles.store') }}"
               class="mt-6 space-y-5">
             @csrf
@@ -68,6 +68,27 @@
                     Markdown is supported: <code>## Heading</code>, <code>**bold**</code>, <code>*italic*</code>, <code>- list item</code>. HTML is not allowed.
                 </p>
                 @error('body')<p class="mt-1 text-sm text-accent">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
+                <label for="cover" class="block text-sm font-semibold">Cover image <span class="font-normal text-ink-soft">(optional · JPG, PNG or WebP · up to 2 MB · only images you have the right to use)</span></label>
+
+                @if ($article->exists && $article->coverUrl())
+                    <img src="{{ $article->coverUrl() }}" alt="" class="mt-2 h-40 w-auto rounded border border-rule object-cover">
+                    <label class="mt-2 flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="remove_cover" value="1"> Remove the current cover image
+                    </label>
+                @endif
+
+                <input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp"
+                       class="mt-2 block w-full text-sm">
+                @error('cover')<p class="mt-1 text-sm text-accent">{{ $message }}</p>@enderror
+
+                <label for="cover_alt" class="mt-3 block text-sm font-semibold">Describe the image <span class="font-normal text-ink-soft">(for screen readers, up to 200 characters)</span></label>
+                <input id="cover_alt" name="cover_alt" type="text" maxlength="200"
+                       value="{{ old('cover_alt', $article->cover_alt) }}"
+                       class="mt-1 w-full border border-ink/40 bg-white px-3 py-2">
+                @error('cover_alt')<p class="mt-1 text-sm text-accent">{{ $message }}</p>@enderror
             </div>
 
             @error('action')<p class="text-sm text-accent">{{ $message }}</p>@enderror
