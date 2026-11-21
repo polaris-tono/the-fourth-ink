@@ -66,7 +66,7 @@ Every demo account uses the password you set in `SEED_USER_PASSWORD`.
 | Part                                 | Owner          | Main folders                                                                                                    |
 | ------------------------------------ | -------------- | --------------------------------------------------------------------------------------------------------------- |
 | 1. Public site and news API          | polaris-tono   | `app/Http/Controllers/Site`, public views, news API service                                                     |
-| 2. Authentication and Writers' Block | to be assigned | `Controllers/Auth`, `Controllers/Contributor`, `EnsureRole`, `ArticlePolicy`, `views/auth`, `views/contributor` |
+| 2. Authentication and Writers' Block | fah-fatima| `Controllers/Auth`, `Controllers/Contributor`, `EnsureRole`, `ArticlePolicy`, `views/auth`, `views/contributor` |
 | 3. Editorial desk and administration | to be assigned | `EditorialWorkflowService`, `Controllers/Admin`, `views/admin`                                                  |
 
 Shared files (migrations, models, enums, seeders, layout, routes) are reviewed by everyone.
